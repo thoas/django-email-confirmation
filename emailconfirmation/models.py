@@ -1,20 +1,22 @@
 from datetime import datetime, timedelta
 from random import random
+from hashlib import sha1 as sha_constructor
 
 from django.conf import settings
 from django.db import models, IntegrityError
 from django.template.loader import render_to_string
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.contrib.sites.models import Site
-from django.contrib.auth.models import User
-from django.utils.hashcompat import sha_constructor
 from django.utils.translation import gettext_lazy as _
 
-from emailconfirmation.signals import email_confirmed
-from emailconfirmation.utils import get_send_mail
+from .signals import email_confirmed
+from .utils import get_send_mail
+from .compat import User
+
 send_mail = get_send_mail()
 
 # this code based in-part on django-registration
+
 
 class EmailAddressManager(models.Manager):
 
@@ -40,6 +42,7 @@ class EmailAddressManager(models.Manager):
         # do a len() on it right away
         return [address.user for address in EmailAddress.objects.filter(
             verified=True, email=email)]
+
 
 class EmailAddress(models.Model):
 
@@ -96,7 +99,7 @@ class EmailConfirmationManager(models.Manager):
         # check for the url with the dotted view path
         try:
             path = reverse("emailconfirmation.views.confirm_email",
-                args=[confirmation_key])
+                           args=[confirmation_key])
         except NoReverseMatch:
             # or get path with named urlconf instead
             path = reverse(
@@ -125,6 +128,7 @@ class EmailConfirmationManager(models.Manager):
         for confirmation in self.all():
             if confirmation.key_expired():
                 confirmation.delete()
+
 
 class EmailConfirmation(models.Model):
 
