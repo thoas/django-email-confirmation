@@ -11,11 +11,12 @@ from django.utils.translation import gettext_lazy as _
 
 from .signals import email_confirmed
 from .utils import get_send_mail
-from .compat import User
 
 send_mail = get_send_mail()
 
 # this code based in-part on django-registration
+
+AUTH_USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 
 
 class EmailAddressManager(models.Manager):
@@ -46,7 +47,7 @@ class EmailAddressManager(models.Manager):
 
 class EmailAddress(models.Model):
 
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(AUTH_USER_MODEL)
     email = models.EmailField()
     verified = models.BooleanField(default=False)
     primary = models.BooleanField(default=False)
